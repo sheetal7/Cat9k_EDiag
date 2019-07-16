@@ -19,9 +19,9 @@ or implied.
 
 """
 
-__author__ = "Sheetal Sahasrabudge <sheesaha@cisco.com>"\
-__copyright__ = "Copyright (c) 2019 Cisco and/or its affiliates."
-__license__ = "Cisco Sample Code License, Version 1.1"
+#__author__ = "Sheetal Sahasrabudge <sheesaha@cisco.com>"\
+#__copyright__ = "Copyright (c) 2019 Cisco and/or its affiliates."
+#__license__ = "Cisco Sample Code License, Version 1.1"
 
 
 from ncclient import manager
@@ -294,11 +294,37 @@ def output_intf_state(intf, intf_state):
     return
 
 
-if __name__ == '__main__':
+def summary_html(intf_state):
+    s = summary(intf_state)
+
+    out = ""
+    out += "<h2> Summary </h2>\n"
+    out += json2html.convert(json.dumps(s["summary"]))
+    out += "\n<h2> State </h2>\n"
+    out += json2html.convert(json.dumps(s["state"]))
+    out += "\n<h2> Stats </h2>\n"
+    out += json2html.convert(json.dumps(s["stats"]))
+    return out
+
+def summary(intf_state):
+    state, stats = output_extra(intf_state)
+    
+    return {
+        "summary": summary_table(intf_state),
+        "state": state,
+        "stats": stats}
+   
+
+def get_intf_state():
     intf_state_xml = get_intf_state_data(HOSTNAME, PORT, \
                                          USERNAME, PASSWORD, \
                                          INTERFACE_NAME)
     intf_state = extract_intf_state(intf_state_xml)
+    return intf_state
+    
+
+if __name__ == '__main__':
+    intf_state = get_intf_state()
     output_summary(intf_state)
     print json.dumps(kr_results, indent=2)
     output_intf_state(INTERFACE_NAME, intf_state)
