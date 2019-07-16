@@ -158,6 +158,28 @@ titles = {
     "negotiated-port-speed": "Link speed"
 }
 
+stats_descs = {
+    "in-octets": "Input octets count",
+    "out-octets": "Output octets count",
+    "in-errors": "Input errors count",
+    "out-errors": "Output errors count",
+    "in-mac-control-frames": "Input MAC control frames count",
+    "out-mac-control-frames": "Output MAC control frames count",
+    "in-mac-pause-frames": "Input MAC pause frames count",
+    "out-mac-pause-frames": "Output MAC pause frames count"
+}
+
+stats_titles = {
+    "in-octets": "Input octets",
+    "out-octets": "Output octets",
+    "in-errors": "Input errors",
+    "out-errors": "Output errors",
+    "in-mac-control-frames": "Input MAC control frames",
+    "out-mac-control-frames": "Output MAC control frames",
+    "in-mac-pause-frames": "Input MAC pause frames",
+    "out-mac-pause-frames": "Output MAC pause frames"
+}
+
 def get_status(val):
     return "true"
 
@@ -185,7 +207,17 @@ def output_extra(intf_state):
             })
 
 
-    return intr['ether-state'], stats, ds
+    stats_ds = []
+    for k, v in stats.items():
+        stats_ds.append({
+            "key": k,
+            "Title": stats_titles[k],
+            "Desc": stats_descs[k],
+            "value": v,
+            "status": get_status(v)
+            })
+
+    return intr['ether-state'], stats, ds, stats_ds
         
 
 def summary_table(intf_state):
@@ -312,7 +344,7 @@ def output_intf_state(intf, intf_state):
     filter_results(kr_results, ["Status", "Test Group"])
     f.write(json2html.convert(json.dumps(kr_results)))
 
-    state, stats, _ = output_extra(intf_state)
+    state, stats, _, _ = output_extra(intf_state)
     f.write("<h2> State </h2>")
     f.write(json2html.convert(json.dumps(state)))
     f.write("<h2> Stats </h2>")
@@ -335,14 +367,14 @@ def summary_html(intf_state):
     return out
 
 def summary(intf_state):
-    state, stats, ds = output_extra(intf_state)
+    state, stats, ds, stats_ds = output_extra(intf_state)
    
     optable = summary_table(intf_state)
     
     return {
         "summary": optable,
         "state": ds,
-        "stats": stats}
+        "stats": stats_ds}
    
 
 def get_intf_state():
