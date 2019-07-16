@@ -145,19 +145,25 @@ def extract_intf_state(intf_state_xml):
 
 
 descs = {
-   "in-errors": "k",
-   "in-mac-control-frames": "0",
-   "in-mac-pause-frames": "0",
-   "in-octets": "164902",
-   "out-errors": "0",
-   "out-mac-control-frames": "0",
-   "out-mac-pause-frames": "0",
-   "out-octets": "132751042"
+    "auto-negotiate": "Link will suto-negotiate parameters",
+    "enable-flow-control": "Flow control enable/disable staus",
+    "negotiated-duplex-mode": "Duplex mode for the link",
+    "negotiated-port-speed": "Link speed"
 }
+
+titles = {
+    "auto-negotiate": "Auto negotiation",
+    "enable-flow-control": "Flow control", 
+    "negotiated-duplex-mode": "Duplex mode",
+    "negotiated-port-speed": "Link speed"
+}
+
+def get_status(val):
+    return "true"
 
 def output_extra(intf_state):
     intr = intf_state['data']['interfaces']['interface']
-    intr['ether-state']
+    lstate = intr['ether-state']
 
     stats = {}
     stats_table = {
@@ -169,7 +175,7 @@ def output_extra(intf_state):
             stats[subkey] = intr[key][subkey]
 
     ds = []
-    for k, v in stats.items():
+    for k, v in lstate.items():
         ds.append({
             "key": k,
             "Title": titles[k],
@@ -192,13 +198,13 @@ def summary_table(intf_state):
 
     print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
     if ( (int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
-        summary.append("Packet errors were seen on the interface, check interface statistics for details")
+        summary.append({"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0"})
     else:
-        summary.append("No packet errors seen on the interface")
+        summary.append({"name": "No packet errors seen on the interface", "status": "1"})
     if ( (int(intr['ether-stats']['in-mac-pause-frames']) != 0) or (int(intr['ether-stats']['out-mac-pause-frames']) != 0)):
-        summary.append("MAC pause were seen on the interface, check interface statistics for details")
+        summary.append({"name": "MAC pause were seen on the interface, check interface statistics for details", "status": "0"})
     else:
-        summary.append("No MAC Pause frames seen on the interface")
+        summary.append({"name": "No MAC Pause frames seen on the interface", "status": "1"})
     return summary
         
 def output_summary(intf_state):
