@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+from __future__ import print_function
 
 """Sample Device Status Monitoring Application
 
@@ -81,9 +82,9 @@ def get_state_data(host, port, user, pwd, ep, intf):
                          hostkey_verify=False) as m:
         sys_state_xml = m.get(filter=("xpath", filter_string)).data_xml
     print "filter string: " + filter_string
-    print"******************************************"
+    print "******************************************"
     print json.dumps(sys_state_xml, indent=2)
-    print"******************************************"
+    print "******************************************"
     return intf_state_xml
 
 
@@ -143,6 +144,17 @@ def extract_intf_state(intf_state_xml):
 
 
 
+descs = {
+   "in-errors": "k",
+   "in-mac-control-frames": "0",
+   "in-mac-pause-frames": "0",
+   "in-octets": "164902",
+   "out-errors": "0",
+   "out-mac-control-frames": "0",
+   "out-mac-pause-frames": "0",
+   "out-octets": "132751042"
+}
+
 def output_extra(intf_state):
     intr = intf_state['data']['interfaces']['interface']
     intr['ether-state']
@@ -156,17 +168,27 @@ def output_extra(intf_state):
         for subkey in subkeys:
             stats[subkey] = intr[key][subkey]
 
+    ds = []
+    for k, v in stats.items():
+        ds.append({
+            "key": k,
+            "Title": titles[k],
+            "Desc": descs[k],
+            "value": v,
+            "status": get_status(v)
+            })
 
-    return intr['ether-state'], stats
+
+    return intr['ether-state'], stats, ds
         
 
 def summary_table(intf_state):
     summary = []
     intr = intf_state['data']['interfaces']['interface']
     if intr['admin-status'] == "if-state-up":
-        summary.append("Application hosting interface is up")
+        summary.append({"name": "Application hosting interface is up", "status": "1"})
     else:
-        summary.append("Application hosting interface is down")
+        summary.append({"name": "Application hosting interface is down", "status": "0"})
 
     print "IN-ERRORS type=", type(intr['statistics']['in-errors'])
     if ( (int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
@@ -284,7 +306,7 @@ def output_intf_state(intf, intf_state):
     filter_results(kr_results, ["Status", "Test Group"])
     f.write(json2html.convert(json.dumps(kr_results)))
 
-    state, stats = output_extra(intf_state)
+    state, stats, _ = output_extra(intf_state)
     f.write("<h2> State </h2>")
     f.write(json2html.convert(json.dumps(state)))
     f.write("<h2> Stats </h2>")
@@ -307,11 +329,13 @@ def summary_html(intf_state):
     return out
 
 def summary(intf_state):
-    state, stats = output_extra(intf_state)
+    state, stats, ds = output_extra(intf_state)
+   
+    optable = summary_table(intf_state)
     
     return {
-        "summary": summary_table(intf_state),
-        "state": state,
+        "summary": optable,
+        "state": ds,
         "stats": stats}
    
 
