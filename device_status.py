@@ -75,16 +75,16 @@ def get_state_data(host, port, user, pwd, ep, intf):
     #filter_string = "/interfaces/interface[name='" + intf + "']/oper_status"
     filter_string = "/"
     #filter_string = "/{}s/{}[name='{}']".format(ep, ep, intf)
-    print filter_string
+    print(filter_string)
     with manager.connect(host=host, port=port, \
                          username=user, password=pwd, \
                          allow_agent=False, look_for_keys=False, \
                          hostkey_verify=False) as m:
         sys_state_xml = m.get(filter=("xpath", filter_string)).data_xml
-    print "filter string: " + filter_string
-    print "******************************************"
-    print json.dumps(sys_state_xml, indent=2)
-    print "******************************************"
+    print("filter string: " + filter_string)
+    print("******************************************")
+    print(json.dumps(sys_state_xml, indent=2))
+    print("******************************************")
     return intf_state_xml
 
 
@@ -120,7 +120,7 @@ def get_intf_state_data(host, port, user, pwd, intf):
                          allow_agent=False, look_for_keys=False, \
                          hostkey_verify=False) as m:
         intf_state_xml = m.get(filter=("xpath", filter_string)).data_xml
-        print "filter string: " + filter_string
+        print("filter string: " + filter_string)
     return intf_state_xml
 
 
@@ -190,7 +190,7 @@ def summary_table(intf_state):
     else:
         summary.append({"name": "Application hosting interface is down", "status": "0"})
 
-    print "IN-ERRORS type=", type(intr['statistics']['in-errors'])
+    print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
     if ( (int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
         summary.append("Packet errors were seen on the interface, check interface statistics for details")
     else:
@@ -203,16 +203,16 @@ def summary_table(intf_state):
         
 def output_summary(intf_state):
     result = {}
-    print json.dumps(intf_state, indent=2)
+    print(json.dumps(intf_state, indent=2))
     intr = intf_state['data']['interfaces']['interface']
     
-    print intr['name'], intr['admin-status'], intr['oper-status']
+    print(intr['name'], intr['admin-status'], intr['oper-status'])
     result['Test'] = "Interface status"
     if intr['admin-status'] == "if-state-up":
         result['Status'] = "PASS"
         result['Result'] = "App-hosting interface is up"
     else :
-        print intr['admin-status']
+        print(intr['admin-status'])
         result['Status'] = "FAIL"
         result['Result'] = "App-hosting interface is down"
     result['Test Group'] = "KR Port"
@@ -288,13 +288,13 @@ def output_intf_state(intf, intf_state):
     f = open('edge_analytics.html','w')
     cgitb.enable()
 
-    print "Content-Type: text/html"
-    print ""
+    print("Content-Type: text/html")
+    print("")
 
-    print "<h1>Cat9K switch Overall health</h1>"
-    print "<h2>App-hosting Interface " + intf + " Status</h2>"
-    print "<a href=\"javascript:window.location.reload(true)\">Refresh</a>"
-    print json2html.convert(json.dumps(intf_state))
+    print("<h1>Cat9K switch Overall health</h1>")
+    print("<h2>App-hosting Interface " + intf + " Status</h2>")
+    print("<a href=\"javascript:window.location.reload(true)\">Refresh</a>")
+    print(json2html.convert(json.dumps(intf_state)))
 
     f.write("<a href=\"javascript:window.location.reload(true)\">Refresh</a>")
     f.write("<h1>Overall switch health</h1>")
@@ -350,7 +350,7 @@ def get_intf_state():
 if __name__ == '__main__':
     intf_state = get_intf_state()
     output_summary(intf_state)
-    print json.dumps(kr_results, indent=2)
+    print(json.dumps(kr_results, indent=2))
     output_intf_state(INTERFACE_NAME, intf_state)
 
 
