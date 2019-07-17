@@ -19,12 +19,5 @@
 #
 # AUTHOR(s): Sheetal Sahasrabudhe <sheesaha@cisco.com>
 
-# Start Apache web server.
-httpd
 
-# Allow container to keep running forever.
-while :
-do
-    sleep 1000
-done
-
+FLASK_APP=./server.py flask run

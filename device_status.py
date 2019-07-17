@@ -20,7 +20,7 @@ or implied.
 
 """
 
-#__author__ = "Sheetal Sahasrabudge <sheesaha@cisco.com>"\
+#__author__ = "Sheetal Sahasrabudge <sheesaha@cisco.com>, Shikhar Suryavansh <shisurya@cisco.com>"\
 #__copyright__ = "Copyright (c) 2019 Cisco and/or its affiliates."
 #__license__ = "Cisco Sample Code License, Version 1.1"
 
@@ -31,6 +31,11 @@ import json
 from json2html import *
 import cgi;
 import cgitb;
+import sys
+import telnetlib
+import time
+import json
+import re
 
 # Catalyst 9K switch hostname or IP address
 HOSTNAME = "172.24.102.141"
@@ -75,16 +80,16 @@ def get_state_data(host, port, user, pwd, ep, intf):
     #filter_string = "/interfaces/interface[name='" + intf + "']/oper_status"
     filter_string = "/"
     #filter_string = "/{}s/{}[name='{}']".format(ep, ep, intf)
-    print(filter_string)
+    #print(filter_string)
     with manager.connect(host=host, port=port, \
                          username=user, password=pwd, \
                          allow_agent=False, look_for_keys=False, \
                          hostkey_verify=False) as m:
         sys_state_xml = m.get(filter=("xpath", filter_string)).data_xml
-    print("filter string: " + filter_string)
-    print("******************************************")
-    print(json.dumps(sys_state_xml, indent=2))
-    print("******************************************")
+    # print("filter string: " + filter_string)
+    # print("******************************************")
+    # print(json.dumps(sys_state_xml, indent=2))
+    # print("******************************************")
     return intf_state_xml
 
 
@@ -120,7 +125,7 @@ def get_intf_state_data(host, port, user, pwd, intf):
                          allow_agent=False, look_for_keys=False, \
                          hostkey_verify=False) as m:
         intf_state_xml = m.get(filter=("xpath", filter_string)).data_xml
-        print("filter string: " + filter_string)
+        # print("filter string: " + filter_string)
     return intf_state_xml
 
 
@@ -180,6 +185,49 @@ stats_titles = {
     "out-mac-pause-frames": "Output MAC pause frames"
 }
 
+iox_descs = {
+    "IOx service (IOxman)     ": "IOxman service",
+    "Libvirtd   1.3.4         ": "Libvirtd service",
+    "IOx service (HA)         ": "HA service",
+    "IOx service (CAF) 1.8.0.2": "CAF service",
+    "Dockerd    18.03.0       ": "Dockerd service"
+}
+
+iox_titles = {
+    "IOx service (IOxman)     ": "IOxman",
+    "Libvirtd   1.3.4         ": "Libvirtd",
+    "IOx service (HA)         ": "HA",
+    "IOx service (CAF) 1.8.0.2": "CAF",
+    "Dockerd    18.03.0       ": "Dockerd"
+}
+
+appList_descs = {
+    "monitor_iox": "monitor app",
+}
+
+appList_titles = {
+    "monitor_iox": "monitor",
+}
+
+res_descs = {
+    "StorageAvail": "Available storage resource",
+    "MemoryQuota": "Total memory resource",
+    "CPUQuota": "Total CPU resource",
+    "StorageQuota": "Total storage resource",
+    "MemoryAvail": "Available memory resource",
+    "CPUAvail": "Available CPU resource"
+}
+
+res_titles = {
+    "StorageAvail": "Available storage",
+    "MemoryQuota": "Total memory",
+    "CPUQuota": "Total CPU",
+    "StorageQuota": "Total storage",
+    "MemoryAvail": "Available memory",
+    "CPUAvail": "Available CPU"
+}
+
+
 def get_status(val):
     return "true"
 
@@ -220,7 +268,7 @@ def output_extra(intf_state):
     return intr['ether-state'], stats, ds, stats_ds
         
 
-def summary_table(intf_state):
+def summary_table(intf_state, ioxInfo):
     summary = []
     intr = intf_state['data']['interfaces']['interface']
     if intr['admin-status'] == "if-state-up":
@@ -228,7 +276,7 @@ def summary_table(intf_state):
     else:
         summary.append({"name": "Application hosting interface is down", "status": "0"})
 
-    print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
+    # print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
     if ( (int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
         summary.append({"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0"})
     else:
@@ -237,20 +285,26 @@ def summary_table(intf_state):
         summary.append({"name": "MAC pause were seen on the interface, check interface statistics for details", "status": "0"})
     else:
         summary.append({"name": "No MAC Pause frames seen on the interface", "status": "1"})
+    if(checkRunning(ioxInfo)):
+        summary.append({"name": "All iox services are running", "status": "1"})
+    else:
+        summary.append({"name": "All iox services are not running, check iox for details", "status": "0"})
+
     return summary
         
+
 def output_summary(intf_state):
     result = {}
-    print(json.dumps(intf_state, indent=2))
+    # print(json.dumps(intf_state, indent=2))
     intr = intf_state['data']['interfaces']['interface']
     
-    print(intr['name'], intr['admin-status'], intr['oper-status'])
+    # print(intr['name'], intr['admin-status'], intr['oper-status'])
     result['Test'] = "Interface status"
     if intr['admin-status'] == "if-state-up":
         result['Status'] = "PASS"
         result['Result'] = "App-hosting interface is up"
     else :
-        print(intr['admin-status'])
+        # print(intr['admin-status'])
         result['Status'] = "FAIL"
         result['Result'] = "App-hosting interface is down"
     result['Test Group'] = "KR Port"
@@ -326,20 +380,20 @@ def output_intf_state(intf, intf_state):
     f = open('edge_analytics.html','w')
     cgitb.enable()
 
-    print("Content-Type: text/html")
-    print("")
+    # print("Content-Type: text/html")
+    # print("")
 
-    print("<h1>Cat9K switch Overall health</h1>")
-    print("<h2>App-hosting Interface " + intf + " Status</h2>")
-    print("<a href=\"javascript:window.location.reload(true)\">Refresh</a>")
-    print(json2html.convert(json.dumps(intf_state)))
+    # print("<h1>Cat9K switch Overall health</h1>")
+    # print("<h2>App-hosting Interface " + intf + " Status</h2>")
+    # print("<a href=\"javascript:window.location.reload(true)\">Refresh</a>")
+    # print(json2html.convert(json.dumps(intf_state)))
 
     f.write("<a href=\"javascript:window.location.reload(true)\">Refresh</a>")
     f.write("<h1>Overall switch health</h1>")
     f.write("<h2>App-hosting Interface " + intf + " Status</h2>")
 
-    summary = summary_table(intf_state)
-    f.write(json2html.convert(json.dumps(summary)))
+    # summary = summary_table(intf_state)
+    # f.write(json2html.convert(json.dumps(summary)))
     
     filter_results(kr_results, ["Status", "Test Group"])
     f.write(json2html.convert(json.dumps(kr_results)))
@@ -366,10 +420,10 @@ def summary_html(intf_state):
     out += json2html.convert(json.dumps(s["stats"]))
     return out
 
-def summary(intf_state):
+def summary(intf_state, ioxInfo):
     state, stats, ds, stats_ds = output_extra(intf_state)
    
-    optable = summary_table(intf_state)
+    optable = summary_table(intf_state, ioxInfo)
     
     return {
         "summary": optable,
@@ -385,10 +439,221 @@ def get_intf_state():
     return intf_state
     
 
+def connectHost(host, psw, userName=None, returnHostName=False):
+    print(host, psw, userName, returnHostName)
+    # connect to switch
+    while True:
+        try:
+            tn = telnetlib.Telnet(host, timeout=5)
+            break
+        except:
+            print('failed to connect! retry in 2 sec')
+            time.sleep(2)
+            pass
+
+    # input username, if any
+    if userName is not None:
+        tn.read_until("Username: ".encode('ascii'))
+        userName += '\n'
+        tn.write(userName.encode('ascii'))
+
+    # input password
+    password = psw + '\n'
+    tn.read_until("Password: ".encode('ascii'))
+    tn.write(password.encode('ascii'))
+
+    if userName is None:
+        # get host name
+        hostName = tn.read_until(">".encode('ascii')).decode().split('\r\n')[1].split(">")[0]
+
+        # enable
+        tn.write("enable\n".encode('ascii'))
+        tn.read_until("Password: ".encode('ascii'))
+        tn.write(password.encode('ascii'))
+        tn.read_until((hostName + "#").encode('ascii'))
+    else:
+        # get host name
+        hostName = tn.read_until("#".encode('ascii')).decode().split('\r\n')[1].split("#")[0]
+
+    # term len 0
+    tn.write("term len 0\n".encode('ascii'))
+    tn.read_until((hostName + "#").encode('ascii'))
+
+    print("connected!")
+
+    return tn, hostName
+
+
+# get iox-service info
+def readIoxInfo(tn, hostName):
+    # sh iox-service
+    tn.write("sh iox-service\n".encode('ascii'))
+    ioxLog = tn.read_until((hostName + "#").encode('ascii')).decode()
+    ioxInfo = dict()
+    for info in ioxLog.split('\r\n')[4:]:
+        if len(info) < 1:
+            break
+        ioxInfo[info.split(' : ')[0]] = info.split(' : ')[1].strip()
+    return ioxInfo
+
+
+# check whether iox running
+def checkRunning(ioxInfo):
+    for i in ioxInfo:
+        if ioxInfo[i] == 'Running':
+            continue
+        else:
+            return False
+    return True
+
+# get app-hosting list (for future use)
+def readAppList(tn, hostName):
+    # sh app list
+    tn.write("sh app-hosting list\n".encode('ascii'))
+    appList = tn.read_until((hostName + "#").encode('ascii')).decode()
+    appListInfo = dict()
+    if len(appList.split('\r\n')) < 5:
+        return appListInfo
+    for i in appList.split('\r\n')[3:]:
+        if len(i) < 1:
+            break
+        appListInfo[re.sub(' +', ' ',i).split(' ')[0].strip()] = re.sub(' +', ' ',i).split(' ')[1].strip()
+    return appListInfo
+
+
+# get app-hosting resource
+def readAppRes(tn, hostName):
+    # sh app-hosting resource
+    tn.write("sh app-hosting resource\n".encode('ascii'))
+    appRes = tn.read_until((hostName + "#").encode('ascii')).decode()
+
+    #parse Info
+    resInfo = dict()
+
+    cpuQuota = int(appRes.split('\r\n')[2].split(': ')[1].split('(')[0])
+    cpuAvail = int(appRes.split('\r\n')[3].split(': ')[1].split('(')[0])
+
+    memQuota = int(appRes.split('\r\n')[5].split(': ')[1].split('(')[0])
+    memAvail = int(appRes.split('\r\n')[6].split(': ')[1].split('(')[0])
+
+    storageQuota = int(appRes.split('\r\n')[8].split(': ')[1].split('(')[0])
+    storageAvail = int(appRes.split('\r\n')[9].split(': ')[1].split('(')[0])
+
+    resInfo['CPUQuota'] = cpuQuota 
+    resInfo['CPUAvail'] = cpuAvail
+    resInfo['MemoryQuota'] = memQuota 
+    resInfo['MemoryAvail'] = memAvail
+    resInfo['StorageQuota'] = storageQuota
+    resInfo['StorageAvail'] = storageAvail
+
+    return resInfo
+
+
+def get_status(val):
+    return "true"
+
+
+def formatAppRes(resInfo):
+    res_ds = []
+    for k, v in resInfo.items():
+        res_ds.append({
+            "key": k,
+            "Title": res_titles[k],
+            "Desc": res_descs[k],
+            "value": str(v),
+            "status": get_status(v)
+            })
+
+    return res_ds
+
+
+def formatIoxInfo(ioxInfo):
+    iox_ds = []
+    for k, v in ioxInfo.items():
+        iox_ds.append({
+            "key": k,
+            "Title": iox_titles[k],
+            "Desc": iox_descs[k],
+            "value": v,
+            "status": get_status(v)
+            })
+
+    return iox_ds
+
+
+def formatAppList(appListInfo):
+    appList_ds = []
+    for k, v in appListInfo.items():
+        appList_ds.append({
+            "key": k,
+            "Title": appList_titles[k],
+            "Desc": appList_descs[k],
+            "value": v,
+            "status": get_status(v)
+            })
+
+    return appList_ds
+
+
+def formatReadInfo(resInfo, ioxInfo, appListInfo):
+    res_ds = formatAppRes(resInfo)
+    iox_ds = formatIoxInfo(ioxInfo)
+    appList_ds = formatAppList(appListInfo)
+    return {
+        "app-resource":res_ds,
+        "iox-info":iox_ds,
+        "app-list":appList_ds
+            }
+
+
+class SwitchInfo(object):
+    def __init__(self, host, password, user):
+        self.host = host
+        self.user = user
+        self.password = password
+
+    def connect(self):
+        tn, hostName = connectHost(self.host, self.password, self.user)
+
+        self.tn = tn
+        self.hostName = hostName
+    
+    def resInfo(self):
+        return readAppRes(self.tn, self.hostName)
+
+    def ioxInfo(self):
+        return readIoxInfo(self.tn, self.hostName)
+
+    def appListInfo(self):
+        return readAppList(self.tn, self.hostName)
+        
+
+def getDefaultSwitchInfo():
+    return SwitchInfo(HOSTNAME, PASSWORD, USERNAME)
+
+
 if __name__ == '__main__':
     intf_state = get_intf_state()
     output_summary(intf_state)
-    print(json.dumps(kr_results, indent=2))
+    # print(json.dumps(kr_results, indent=2))
     output_intf_state(INTERFACE_NAME, intf_state)
 
+
+    # connect to switch
+    tn, hostName = connectHost(HOSTNAME, PASSWORD, USERNAME)
+
+    resInfo = readAppRes(tn, hostName)
+    ioxInfo = readIoxInfo(tn, hostName)
+    appListInfo = readAppList(tn, hostName)
+    # **remember to close the connection**
+    tn.close()
+
+    intf_state_summary = summary(intf_state, ioxInfo)
+    readInfo = formatReadInfo(resInfo, ioxInfo, appListInfo)
+    readInfo.update(intf_state_summary)
+
+    jsonFile = open('edge_analytics.json','w')
+    jsonFile.write(json.dumps(readInfo))
+    jsonFile.close()
+    print("edge_analytics.json dumped")
 
