@@ -1,0 +1,198 @@
+{
+    "app-list": [
+        {
+            "desc": "monitor app",
+            "key": "monitor_iox",
+            "status": "true",
+            "title": "monitor",
+            "value": "ACTIVATED"
+        }
+    ],
+    "app-resource": [
+        {
+            "desc": "Available storage resource",
+            "key": "StorageAvail",
+            "status": "true",
+            "title": "Available storage",
+            "value": "119990"
+        },
+        {
+            "desc": "Total memory resource",
+            "key": "MemoryQuota",
+            "status": "true",
+            "title": "Total memory",
+            "value": "2048"
+        },
+        {
+            "desc": "Total CPU resource",
+            "key": "CPUQuota",
+            "status": "true",
+            "title": "Total CPU",
+            "value": "7400"
+        },
+        {
+            "desc": "Total storage resource",
+            "key": "StorageQuota",
+            "status": "true",
+            "title": "Total storage",
+            "value": "120000"
+        },
+        {
+            "desc": "Available memory resource",
+            "key": "MemoryAvail",
+            "status": "true",
+            "title": "Available memory",
+            "value": "0"
+        },
+        {
+            "desc": "Available CPU resource",
+            "key": "CPUAvail",
+            "status": "true",
+            "title": "Available CPU",
+            "value": "0"
+        }
+    ],
+    "iox-info": [
+        {
+            "desc": "IOxman service",
+            "key": "IOx service (IOxman)     ",
+            "status": "true",
+            "title": "IOxman",
+            "value": "Running"
+        },
+        {
+            "desc": "Libvirtd service",
+            "key": "Libvirtd   1.3.4         ",
+            "status": "true",
+            "title": "Libvirtd",
+            "value": "Running"
+        },
+        {
+            "desc": "HA service",
+            "key": "IOx service (HA)         ",
+            "status": "true",
+            "title": "HA",
+            "value": "Running"
+        },
+        {
+            "desc": "CAF service",
+            "key": "IOx service (CAF) 1.8.0.2",
+            "status": "true",
+            "title": "CAF",
+            "value": "Running"
+        },
+        {
+            "desc": "Dockerd service",
+            "key": "Dockerd    18.03.0       ",
+            "status": "true",
+            "title": "Dockerd",
+            "value": "Running"
+        }
+    ],
+    "state": [
+        {
+            "desc": "Duplex mode for the link",
+            "key": "negotiated-duplex-mode",
+            "status": "true",
+            "title": "Duplex mode",
+            "value": "full-duplex"
+        },
+        {
+            "desc": "Link speed",
+            "key": "negotiated-port-speed",
+            "status": "true",
+            "title": "Link speed",
+            "value": "speed-1gb"
+        },
+        {
+            "desc": "Link will suto-negotiate parameters",
+            "key": "auto-negotiate",
+            "status": "true",
+            "title": "Auto negotiation",
+            "value": "false"
+        },
+        {
+            "desc": "Flow control enable/disable staus",
+            "key": "enable-flow-control",
+            "status": "true",
+            "title": "Flow control",
+            "value": "false"
+        }
+    ],
+    "stats": [
+        {
+            "desc": "Output octets count",
+            "key": "out-octets",
+            "status": "true",
+            "title": "Output octets",
+            "value": "136291946"
+        },
+        {
+            "desc": "Input errors count",
+            "key": "in-errors",
+            "status": "true",
+            "title": "Input errors",
+            "value": "0"
+        },
+        {
+            "desc": "Input MAC pause frames count",
+            "key": "in-mac-pause-frames",
+            "status": "true",
+            "title": "Input MAC pause frames",
+            "value": "0"
+        },
+        {
+            "desc": "Input MAC control frames count",
+            "key": "in-mac-control-frames",
+            "status": "true",
+            "title": "Input MAC control frames",
+            "value": "0"
+        },
+        {
+            "desc": "Output MAC control frames count",
+            "key": "out-mac-control-frames",
+            "status": "true",
+            "title": "Output MAC control frames",
+            "value": "0"
+        },
+        {
+            "desc": "Output errors count",
+            "key": "out-errors",
+            "status": "true",
+            "title": "Output errors",
+            "value": "0"
+        },
+        {
+            "desc": "Output MAC pause frames count",
+            "key": "out-mac-pause-frames",
+            "status": "true",
+            "title": "Output MAC pause frames",
+            "value": "0"
+        },
+        {
+            "desc": "Input octets count",
+            "key": "in-octets",
+            "status": "true",
+            "title": "Input octets",
+            "value": "171568"
+        }
+    ],
+    "summary": [
+        {
+            "name": "Application hosting interface is up",
+            "status": "1"
+        },
+        {
+            "name": "No packet errors seen on the interface",
+            "status": "1"
+        },
+        {
+            "name": "No MAC Pause frames seen on the interface",
+            "status": "1"
+        },
+        {
+            "name": "All iox services are running",
+            "status": "1"
+        }
+    ]
+}
