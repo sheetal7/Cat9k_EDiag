@@ -248,8 +248,8 @@ def output_extra(intf_state):
     for k, v in lstate.items():
         ds.append({
             "key": k,
-            "Title": titles[k],
-            "Desc": descs[k],
+            "title": titles[k],
+            "desc": descs[k],
             "value": v,
             "status": get_status(v)
         })
@@ -258,8 +258,8 @@ def output_extra(intf_state):
     for k, v in stats.items():
         stats_ds.append({
             "key": k,
-            "Title": stats_titles[k],
-            "Desc": stats_descs[k],
+            "title": stats_titles[k],
+            "desc": stats_descs[k],
             "value": v,
             "status": get_status(v)
         })
@@ -574,8 +574,8 @@ def formatAppRes(resInfo):
     for k, v in resInfo.items():
         res_ds.append({
             "key": k,
-            "Title": res_titles[k],
-            "Desc": res_descs[k],
+            "title": res_titles[k],
+            "desc": res_descs[k],
             "value": str(v),
             "status": get_status(v)
         })
@@ -588,8 +588,8 @@ def formatIoxInfo(ioxInfo):
     for k, v in ioxInfo.items():
         iox_ds.append({
             "key": k,
-            "Title": iox_titles[k],
-            "Desc": iox_descs[k],
+            "title": iox_titles[k],
+            "desc": iox_descs[k],
             "value": v,
             "status": get_status(v)
         })
@@ -602,8 +602,8 @@ def formatAppList(appListInfo):
     for k, v in appListInfo.items():
         appList_ds.append({
             "key": k,
-            "Title": appList_titles[k],
-            "Desc": appList_descs[k],
+            "title": appList_titles[k],
+            "desc": appList_descs[k],
             "value": v,
             "status": get_status(v)
         })
