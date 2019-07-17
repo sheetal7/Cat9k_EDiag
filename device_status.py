@@ -663,9 +663,12 @@ if __name__ == '__main__':
     # connect to switch
     tn, hostName = connectHost(HOSTNAME, PASSWORD, USERNAME)
 
-    resInfo = readAppRes(tn, hostName)
     ioxInfo = readIoxInfo(tn, hostName)
     appListInfo = readAppList(tn, hostName)
+    resInfo = dict()
+    if checkRunning(ioxInfo):
+        resInfo = readAppRes(tn, hostName)
+
     # **remember to close the connection**
     tn.close()
 
