@@ -551,6 +551,9 @@ def readAppRes(tn, hostName):
 
     # parse Info
     resInfo = dict()
+    
+    if len(appRes.split('\r\n')) < 6:
+        return resInfo
 
     cpuQuota = int(appRes.split('\r\n')[2].split(': ')[1].split('(')[0])
     cpuAvail = int(appRes.split('\r\n')[3].split(': ')[1].split('(')[0])
