@@ -184,21 +184,9 @@ stats_titles = {
     "out-mac-pause-frames": "Output MAC pause frames"
 }
 
-iox_descs = {
-    "IOx service (IOxman)     ": "IOxman service",
-    "Libvirtd   1.3.4         ": "Libvirtd service",
-    "IOx service (HA)         ": "HA service",
-    "IOx service (CAF) 1.8.0.2": "CAF service",
-    "Dockerd    18.03.0       ": "Dockerd service"
-}
+iox_descs = dict()
 
-iox_titles = {
-    "IOx service (IOxman)     ": "IOxman",
-    "Libvirtd   1.3.4         ": "Libvirtd",
-    "IOx service (HA)         ": "HA",
-    "IOx service (CAF) 1.8.0.2": "CAF",
-    "Dockerd    18.03.0       ": "Dockerd"
-}
+iox_titles = dict()
 
 appList_descs = {
     "monitor_iox": "monitor app",
@@ -267,7 +255,7 @@ def output_extra(intf_state):
     return intr['ether-state'], stats, ds, stats_ds
 
 
-def summary_table(intf_state, ioxInfo):
+def summary_table(intf_state, ioxInfo, resInfo):
     summary = []
     intr = intf_state['data']['interfaces']['interface']
     if intr['admin-status'] == "if-state-up":
@@ -290,12 +278,18 @@ def summary_table(intf_state, ioxInfo):
     else:
         summary.append(
             {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"})
+
+
     if(checkRunning(ioxInfo)):
         summary.append({"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"})
+        if(resInfo['StorageQuota'] <= 10000):
+            summary.append({"name": "USB flash is not available", "status": "0", "value": "R", "message": "None", "action": "None"})
+        else:
+            summary.append({"name": "USB flash is available", "status": "1", "value": "G", "message": "None", "action": "None"})
     else:
         summary.append(
             {"name": "All iox services are not running, check iox for details", "status": "0", "value": "R", "message": "Looks like Iox is not running cleanly, would you like to fix it?", "action": "/runIox"})
-
+    
     return summary
 
 
@@ -434,7 +428,7 @@ def summary_html(intf_state):
 def summary(intf_state, ioxInfo, resInfo, appListInfo):
     state, stats, ds, stats_ds = output_extra(intf_state)
 
-    optable = summary_table(intf_state, ioxInfo)
+    optable = summary_table(intf_state, ioxInfo, resInfo)
     res_ds = formatAppRes(resInfo)
     iox_ds = formatIoxInfo(ioxInfo)
     appList_ds = formatAppList(appListInfo)
@@ -513,6 +507,8 @@ def readIoxInfo(tn, hostName):
         if len(info) < 1:
             break
         ioxInfo[info.split(' : ')[0]] = info.split(' : ')[1].strip()
+        iox_titles[info.split(' : ')[0]] = info.split(' : ')[0].strip()
+        iox_descs[info.split(' : ')[0]] = info.split(' : ')[0].strip()
     return ioxInfo
 
 
