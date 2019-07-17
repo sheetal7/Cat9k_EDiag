@@ -29,8 +29,8 @@ from ncclient import manager
 import xmltodict
 import json
 from json2html import *
-import cgi;
-import cgitb;
+import cgi
+import cgitb
 import sys
 import telnetlib
 import time
@@ -41,7 +41,7 @@ import re
 HOSTNAME = "172.24.102.141"
 
 # Catalyst 9K switch Netconf port
-PORT = 830 
+PORT = 830
 
 # Catalyst 9K switch login credentials
 USERNAME = "cisco"
@@ -52,6 +52,7 @@ PASSWORD = "cisco123"
 INTERFACE_NAME = "AppGigabitEthernet1/0/1"
 
 kr_results = []
+
 
 def get_state_data(host, port, user, pwd, ep, intf):
     """Fetch state of the interface from the switch.
@@ -68,7 +69,7 @@ def get_state_data(host, port, user, pwd, ep, intf):
 
     Returns:
         str: The XML encoded response from the switch.
-    
+
     filter_string = "/interfaces/interface[name='" + intf + "']/state"
     with manager.connect(host=host, port=port, \
                          username=user, password=pwd, \
@@ -80,10 +81,10 @@ def get_state_data(host, port, user, pwd, ep, intf):
     #filter_string = "/interfaces/interface[name='" + intf + "']/oper_status"
     filter_string = "/"
     #filter_string = "/{}s/{}[name='{}']".format(ep, ep, intf)
-    #print(filter_string)
-    with manager.connect(host=host, port=port, \
-                         username=user, password=pwd, \
-                         allow_agent=False, look_for_keys=False, \
+    # print(filter_string)
+    with manager.connect(host=host, port=port,
+                         username=user, password=pwd,
+                         allow_agent=False, look_for_keys=False,
                          hostkey_verify=False) as m:
         sys_state_xml = m.get(filter=("xpath", filter_string)).data_xml
     # print("filter string: " + filter_string)
@@ -91,7 +92,6 @@ def get_state_data(host, port, user, pwd, ep, intf):
     # print(json.dumps(sys_state_xml, indent=2))
     # print("******************************************")
     return intf_state_xml
-
 
 
 def get_intf_state_data(host, port, user, pwd, intf):
@@ -109,7 +109,7 @@ def get_intf_state_data(host, port, user, pwd, intf):
 
     Returns:
         str: The XML encoded response from the switch.
-    
+
     filter_string = "/interfaces/interface[name='" + intf + "']/state"
     with manager.connect(host=host, port=port, \
                          username=user, password=pwd, \
@@ -120,9 +120,9 @@ def get_intf_state_data(host, port, user, pwd, intf):
     intf_state_xml = ""
     #filter_string = "/interfaces/interface[name='" + intf + "']/oper_status"
     filter_string = "/interfaces/interface[name='" + intf + "']"
-    with manager.connect(host=host, port=port, \
-                         username=user, password=pwd, \
-                         allow_agent=False, look_for_keys=False, \
+    with manager.connect(host=host, port=port,
+                         username=user, password=pwd,
+                         allow_agent=False, look_for_keys=False,
                          hostkey_verify=False) as m:
         intf_state_xml = m.get(filter=("xpath", filter_string)).data_xml
         # print("filter string: " + filter_string)
@@ -140,13 +140,12 @@ def extract_intf_state(intf_state_xml):
 
     Returns:
         dict: Interface state.
-    
+
     """
 
     intf_state = xmltodict.parse(intf_state_xml)
 
     return intf_state
-
 
 
 descs = {
@@ -158,7 +157,7 @@ descs = {
 
 titles = {
     "auto-negotiate": "Auto negotiation",
-    "enable-flow-control": "Flow control", 
+    "enable-flow-control": "Flow control",
     "negotiated-duplex-mode": "Duplex mode",
     "negotiated-port-speed": "Link speed"
 }
@@ -231,6 +230,7 @@ res_titles = {
 def get_status(val):
     return "true"
 
+
 def output_extra(intf_state):
     intr = intf_state['data']['interfaces']['interface']
     lstate = intr['ether-state']
@@ -252,8 +252,7 @@ def output_extra(intf_state):
             "Desc": descs[k],
             "value": v,
             "status": get_status(v)
-            })
-
+        })
 
     stats_ds = []
     for k, v in stats.items():
@@ -263,100 +262,111 @@ def output_extra(intf_state):
             "Desc": stats_descs[k],
             "value": v,
             "status": get_status(v)
-            })
+        })
 
     return intr['ether-state'], stats, ds, stats_ds
-        
+
 
 def summary_table(intf_state, ioxInfo):
     summary = []
     intr = intf_state['data']['interfaces']['interface']
     if intr['admin-status'] == "if-state-up":
-        summary.append({"name": "Application hosting interface is up", "status": "1"})
+        summary.append(
+            {"name": "Application hosting interface is up", "status": "1"})
     else:
-        summary.append({"name": "Application hosting interface is down", "status": "0"})
+        summary.append(
+            {"name": "Application hosting interface is down", "status": "0"})
 
     # print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
-    if ( (int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
-        summary.append({"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0"})
+    if ((int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
+        summary.append(
+            {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0"})
     else:
-        summary.append({"name": "No packet errors seen on the interface", "status": "1"})
-    if ( (int(intr['ether-stats']['in-mac-pause-frames']) != 0) or (int(intr['ether-stats']['out-mac-pause-frames']) != 0)):
-        summary.append({"name": "MAC pause were seen on the interface, check interface statistics for details", "status": "0"})
+        summary.append(
+            {"name": "No packet errors seen on the interface", "status": "1"})
+    if ((int(intr['ether-stats']['in-mac-pause-frames']) != 0) or (int(intr['ether-stats']['out-mac-pause-frames']) != 0)):
+        summary.append(
+            {"name": "MAC pause were seen on the interface, check interface statistics for details", "status": "0"})
     else:
-        summary.append({"name": "No MAC Pause frames seen on the interface", "status": "1"})
+        summary.append(
+            {"name": "No MAC Pause frames seen on the interface", "status": "1"})
     if(checkRunning(ioxInfo)):
         summary.append({"name": "All iox services are running", "status": "1"})
     else:
-        summary.append({"name": "All iox services are not running, check iox for details", "status": "0"})
+        summary.append(
+            {"name": "All iox services are not running, check iox for details", "status": "0"})
 
     return summary
-        
+
 
 def output_summary(intf_state):
     result = {}
     # print(json.dumps(intf_state, indent=2))
     intr = intf_state['data']['interfaces']['interface']
-    
+
     # print(intr['name'], intr['admin-status'], intr['oper-status'])
     result['Test'] = "Interface status"
     if intr['admin-status'] == "if-state-up":
         result['Status'] = "PASS"
         result['Result'] = "App-hosting interface is up"
-    else :
+    else:
         # print(intr['admin-status'])
         result['Status'] = "FAIL"
         result['Result'] = "App-hosting interface is down"
     result['Test Group'] = "KR Port"
-    #kr_results.append(result)
+    # kr_results.append(result)
 
     result1 = {}
     intr_stats = intf_state['data']['interfaces']['interface']['statistics']
     result1['Test'] = "Interface output packet error counts"
-    if (intr_stats['out-errors'] != "0") :
+    if (intr_stats['out-errors'] != "0"):
         result1['Status'] = "FAIL"
-        result1['Result'] = "Output Packet errors seen on App interface, error count=" + intr_stats['out-errors']
-    else :
+        result1['Result'] = "Output Packet errors seen on App interface, error count=" + \
+            intr_stats['out-errors']
+    else:
         result1['Status'] = "PASS"
         result1['Result'] = "No output Packet errors seen on App interface"
     result1['Test Group'] = "KR Port"
-    #kr_results.append(result1)
+    # kr_results.append(result1)
 
     result2 = {}
     intr_stats = intf_state['data']['interfaces']['interface']['statistics']
     result2['Test'] = "Interface input packet error counts"
-    if (intr_stats['in-errors'] != "0") :
+    if (intr_stats['in-errors'] != "0"):
         result2['Status'] = "FAIL"
-        result2['Result'] = "Input Packet errors seen on App interface, error count=" + intr_stats['in-errors'] 
-    else :
+        result2['Result'] = "Input Packet errors seen on App interface, error count=" + \
+            intr_stats['in-errors']
+    else:
         result2['Status'] = "PASS"
         result2['Result'] = "No input Packet errors seen on App interface"
     result2['Test Group'] = "KR Port"
-    #kr_results.append(result2)
+    # kr_results.append(result2)
 
     result3 = {}
     intr_stats = intf_state['data']['interfaces']['interface']['ether-stats']
     result3['Test'] = "App interface output Pause Frames"
-    if (intr_stats['out-mac-pause-frames'] != "0") :
+    if (intr_stats['out-mac-pause-frames'] != "0"):
         result3['Status'] = "FAIL"
-        result3['Result'] = "Output Pause frames have been sent on App interface, error count=" + intr_stats['out-mac-pause-frames']
-    else :
+        result3['Result'] = "Output Pause frames have been sent on App interface, error count=" + \
+            intr_stats['out-mac-pause-frames']
+    else:
         result3['Status'] = "PASS"
         result3['Result'] = "No output Pause frames have been sent on App interface"
     result3['Test Group'] = "KR Port"
-    #kr_results.append(result3)
+    # kr_results.append(result3)
 
     result4 = {}
     intr_stats = intf_state['data']['interfaces']['interface']['ether-stats']
     result4['Test'] = "Interface input Pause Frames"
-    if (intr_stats['in-mac-pause-frames'] != "0") :
+    if (intr_stats['in-mac-pause-frames'] != "0"):
         result4['Status'] = "FAIL"
-        result4['Result'] = "Input Pause frames have been sent on App interface, error count=" + intr_stats['in-mac-pause-frames']
-    else :
+        result4['Result'] = "Input Pause frames have been sent on App interface, error count=" + \
+            intr_stats['in-mac-pause-frames']
+    else:
         result4['Status'] = "PASS"
         result4['Result'] = "No input Pause frames have been sent on App interface"
     result4['Test Group'] = "KR Port"
-    #kr_results.append(result4)
+    # kr_results.append(result4)
 
 
 def filter_results(res, remove):
@@ -364,7 +374,7 @@ def filter_results(res, remove):
         for rk in remove:
             del rs[rk]
 
-    
+
 def output_intf_state(intf, intf_state):
     """Output interface state as HTML webpage.
 
@@ -377,7 +387,7 @@ def output_intf_state(intf, intf_state):
 
     """
 
-    f = open('edge_analytics.html','w')
+    f = open('edge_analytics.html', 'w')
     cgitb.enable()
 
     # print("Content-Type: text/html")
@@ -394,7 +404,7 @@ def output_intf_state(intf, intf_state):
 
     # summary = summary_table(intf_state)
     # f.write(json2html.convert(json.dumps(summary)))
-    
+
     filter_results(kr_results, ["Status", "Test Group"])
     f.write(json2html.convert(json.dumps(kr_results)))
 
@@ -420,24 +430,25 @@ def summary_html(intf_state):
     out += json2html.convert(json.dumps(s["stats"]))
     return out
 
+
 def summary(intf_state, ioxInfo):
     state, stats, ds, stats_ds = output_extra(intf_state)
-   
+
     optable = summary_table(intf_state, ioxInfo)
-    
+
     return {
         "summary": optable,
         "state": ds,
         "stats": stats_ds}
-   
+
 
 def get_intf_state():
-    intf_state_xml = get_intf_state_data(HOSTNAME, PORT, \
-                                         USERNAME, PASSWORD, \
+    intf_state_xml = get_intf_state_data(HOSTNAME, PORT,
+                                         USERNAME, PASSWORD,
                                          INTERFACE_NAME)
     intf_state = extract_intf_state(intf_state_xml)
     return intf_state
-    
+
 
 def connectHost(host, psw, userName=None, returnHostName=False):
     print(host, psw, userName, returnHostName)
@@ -464,7 +475,8 @@ def connectHost(host, psw, userName=None, returnHostName=False):
 
     if userName is None:
         # get host name
-        hostName = tn.read_until(">".encode('ascii')).decode().split('\r\n')[1].split(">")[0]
+        hostName = tn.read_until(">".encode('ascii')).decode().split('\r\n')[
+            1].split(">")[0]
 
         # enable
         tn.write("enable\n".encode('ascii'))
@@ -473,7 +485,8 @@ def connectHost(host, psw, userName=None, returnHostName=False):
         tn.read_until((hostName + "#").encode('ascii'))
     else:
         # get host name
-        hostName = tn.read_until("#".encode('ascii')).decode().split('\r\n')[1].split("#")[0]
+        hostName = tn.read_until("#".encode('ascii')).decode().split('\r\n')[
+            1].split("#")[0]
 
     # term len 0
     tn.write("term len 0\n".encode('ascii'))
@@ -507,6 +520,8 @@ def checkRunning(ioxInfo):
     return True
 
 # get app-hosting list (for future use)
+
+
 def readAppList(tn, hostName):
     # sh app list
     tn.write("sh app-hosting list\n".encode('ascii'))
@@ -517,7 +532,8 @@ def readAppList(tn, hostName):
     for i in appList.split('\r\n')[3:]:
         if len(i) < 1:
             break
-        appListInfo[re.sub(' +', ' ',i).split(' ')[0].strip()] = re.sub(' +', ' ',i).split(' ')[1].strip()
+        appListInfo[re.sub(' +', ' ', i).split(' ')[0].strip()
+                    ] = re.sub(' +', ' ', i).split(' ')[1].strip()
     return appListInfo
 
 
@@ -527,7 +543,7 @@ def readAppRes(tn, hostName):
     tn.write("sh app-hosting resource\n".encode('ascii'))
     appRes = tn.read_until((hostName + "#").encode('ascii')).decode()
 
-    #parse Info
+    # parse Info
     resInfo = dict()
 
     cpuQuota = int(appRes.split('\r\n')[2].split(': ')[1].split('(')[0])
@@ -539,9 +555,9 @@ def readAppRes(tn, hostName):
     storageQuota = int(appRes.split('\r\n')[8].split(': ')[1].split('(')[0])
     storageAvail = int(appRes.split('\r\n')[9].split(': ')[1].split('(')[0])
 
-    resInfo['CPUQuota'] = cpuQuota 
+    resInfo['CPUQuota'] = cpuQuota
     resInfo['CPUAvail'] = cpuAvail
-    resInfo['MemoryQuota'] = memQuota 
+    resInfo['MemoryQuota'] = memQuota
     resInfo['MemoryAvail'] = memAvail
     resInfo['StorageQuota'] = storageQuota
     resInfo['StorageAvail'] = storageAvail
@@ -562,7 +578,7 @@ def formatAppRes(resInfo):
             "Desc": res_descs[k],
             "value": str(v),
             "status": get_status(v)
-            })
+        })
 
     return res_ds
 
@@ -576,7 +592,7 @@ def formatIoxInfo(ioxInfo):
             "Desc": iox_descs[k],
             "value": v,
             "status": get_status(v)
-            })
+        })
 
     return iox_ds
 
@@ -590,7 +606,7 @@ def formatAppList(appListInfo):
             "Desc": appList_descs[k],
             "value": v,
             "status": get_status(v)
-            })
+        })
 
     return appList_ds
 
@@ -600,10 +616,10 @@ def formatReadInfo(resInfo, ioxInfo, appListInfo):
     iox_ds = formatIoxInfo(ioxInfo)
     appList_ds = formatAppList(appListInfo)
     return {
-        "app-resource":res_ds,
-        "iox-info":iox_ds,
-        "app-list":appList_ds
-            }
+        "app-resource": res_ds,
+        "iox-info": iox_ds,
+        "app-list": appList_ds
+    }
 
 
 class SwitchInfo(object):
@@ -617,7 +633,7 @@ class SwitchInfo(object):
 
         self.tn = tn
         self.hostName = hostName
-    
+
     def resInfo(self):
         return readAppRes(self.tn, self.hostName)
 
@@ -626,7 +642,7 @@ class SwitchInfo(object):
 
     def appListInfo(self):
         return readAppList(self.tn, self.hostName)
-        
+
 
 def getDefaultSwitchInfo():
     return SwitchInfo(HOSTNAME, PASSWORD, USERNAME)
@@ -637,7 +653,6 @@ if __name__ == '__main__':
     output_summary(intf_state)
     # print(json.dumps(kr_results, indent=2))
     output_intf_state(INTERFACE_NAME, intf_state)
-
 
     # connect to switch
     tn, hostName = connectHost(HOSTNAME, PASSWORD, USERNAME)
@@ -652,8 +667,7 @@ if __name__ == '__main__':
     readInfo = formatReadInfo(resInfo, ioxInfo, appListInfo)
     readInfo.update(intf_state_summary)
 
-    jsonFile = open('edge_analytics.json','w')
+    jsonFile = open('edge_analytics.json', 'w')
     jsonFile.write(json.dumps(readInfo))
     jsonFile.close()
     print("edge_analytics.json dumped")
-
