@@ -431,12 +431,18 @@ def summary_html(intf_state):
     return out
 
 
-def summary(intf_state, ioxInfo):
+def summary(intf_state, ioxInfo, resInfo, appListInfo):
     state, stats, ds, stats_ds = output_extra(intf_state)
 
     optable = summary_table(intf_state, ioxInfo)
+    res_ds = formatAppRes(resInfo)
+    iox_ds = formatIoxInfo(ioxInfo)
+    appList_ds = formatAppList(appListInfo)
 
     return {
+        "app-resource": res_ds,
+        "iox-info": iox_ds,
+        "app-list": appList_ds,
         "summary": optable,
         "state": ds,
         "stats": stats_ds}
@@ -663,7 +669,7 @@ if __name__ == '__main__':
     # **remember to close the connection**
     tn.close()
 
-    intf_state_summary = summary(intf_state, ioxInfo)
+    intf_state_summary = summary(intf_state, ioxInfo, resInfo, appListInfo)
     readInfo = formatReadInfo(resInfo, ioxInfo, appListInfo)
     readInfo.update(intf_state_summary)
 
