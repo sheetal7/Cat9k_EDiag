@@ -272,29 +272,29 @@ def summary_table(intf_state, ioxInfo):
     intr = intf_state['data']['interfaces']['interface']
     if intr['admin-status'] == "if-state-up":
         summary.append(
-            {"name": "Application hosting interface is up", "status": "1"})
+            {"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"})
     else:
         summary.append(
-            {"name": "Application hosting interface is down", "status": "0"})
+            {"name": "Application hosting interface is down", "status": "0", "value": "R", "message": "App hosting interface is down so app hosting will not work, would you like to fix it?", "action": "/runAppInt"})
 
     # print("IN-ERRORS type=", type(intr['statistics']['in-errors']))
     if ((int(intr['statistics']['in-errors']) != 0) or (int(intr['statistics']['out-errors']) != 0)):
         summary.append(
-            {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0"})
+            {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Your interface has packet errors, please make sure your settings are correct", "action": "None" })
     else:
         summary.append(
-            {"name": "No packet errors seen on the interface", "status": "1"})
+            {"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"})
     if ((int(intr['ether-stats']['in-mac-pause-frames']) != 0) or (int(intr['ether-stats']['out-mac-pause-frames']) != 0)):
         summary.append(
-            {"name": "MAC pause were seen on the interface, check interface statistics for details", "status": "0"})
+            {"name": "MAC pause frames were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Pause frames are seen, check the ethernet statistics and link speed", "action": "None"})
     else:
         summary.append(
-            {"name": "No MAC Pause frames seen on the interface", "status": "1"})
+            {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"})
     if(checkRunning(ioxInfo)):
-        summary.append({"name": "All iox services are running", "status": "1"})
+        summary.append({"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"})
     else:
         summary.append(
-            {"name": "All iox services are not running, check iox for details", "status": "0"})
+            {"name": "All iox services are not running, check iox for details", "status": "0", "value": "R", "message": "Looks like Iox is not running cleanly, would you like to fix it?", "action": "/runIox"})
 
     return summary
 
