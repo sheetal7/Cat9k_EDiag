@@ -152,14 +152,16 @@ descs = {
     "auto-negotiate": "Link will suto-negotiate parameters",
     "enable-flow-control": "Flow control enable/disable staus",
     "negotiated-duplex-mode": "Duplex mode for the link",
-    "negotiated-port-speed": "Link speed"
+    "negotiated-port-speed": "Link speed",
+    "media-type":""
 }
 
 titles = {
     "auto-negotiate": "Auto negotiation",
     "enable-flow-control": "Flow control",
     "negotiated-duplex-mode": "Duplex mode",
-    "negotiated-port-speed": "Link speed"
+    "negotiated-port-speed": "Link speed",
+    "media-type":""
 }
 
 stats_descs = {
@@ -231,6 +233,8 @@ def output_extra(intf_state):
     for key, subkeys in stats_table.items():
         for subkey in subkeys:
             stats[subkey] = intr[key][subkey]
+
+    print(intr['ether-state'])
 
     ds = []
     for k, v in lstate.items():
@@ -528,9 +532,12 @@ def readIoxInfo(tn, hostName):
     for info in ioxLog.split('\r\n')[4:]:
         if len(info) < 1:
             break
+        if info.split(' : ')[0] == "IOx service (HA)         " or info.split(' : ')[0] == "Application DB Sync Info":
+            continue
         ioxInfo[info.split(' : ')[0]] = info.split(' : ')[1].strip()
         iox_titles[info.split(' : ')[0]] = info.split(' : ')[0].strip()
         iox_descs[info.split(' : ')[0]] = info.split(' : ')[0].strip()
+
     return ioxInfo
 
 
@@ -569,18 +576,18 @@ def readAppRes(tn, hostName):
 
     # parse Info
     resInfo = dict()
-    
+
     if len(appRes.split('\r\n')) < 6:
         return resInfo
 
     cpuQuota = int(appRes.split('\r\n')[2].split(': ')[1].split('(')[0])
     cpuAvail = int(appRes.split('\r\n')[3].split(': ')[1].split('(')[0])
 
-    memQuota = int(appRes.split('\r\n')[5].split(': ')[1].split('(')[0])
-    memAvail = int(appRes.split('\r\n')[6].split(': ')[1].split('(')[0])
+    memQuota = int(appRes.split('\r\n')[7].split(': ')[1].split('(')[0])
+    memAvail = int(appRes.split('\r\n')[8].split(': ')[1].split('(')[0])
 
-    storageQuota = int(appRes.split('\r\n')[8].split(': ')[1].split('(')[0])
-    storageAvail = int(appRes.split('\r\n')[9].split(': ')[1].split('(')[0])
+    storageQuota = int(appRes.split('\r\n')[10].split(': ')[1].split('(')[0])
+    storageAvail = int(appRes.split('\r\n')[11].split(': ')[1].split('(')[0])
 
     resInfo['CPUQuota'] = cpuQuota
     resInfo['CPUAvail'] = cpuAvail
