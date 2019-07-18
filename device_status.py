@@ -293,6 +293,26 @@ def summary_table(intf_state, ioxInfo, resInfo):
     return summary
 
 
+def runIox(tn, hostName):
+    tn.write("config term\n".encode('ascii'))
+    tn.read_until((hostName + "(config)#").encode('ascii')).decode()
+    tn.write("iox\n".encode('ascii'))
+    tn.read_until((hostName + "(config)#").encode('ascii')).decode()
+    tn.write("end\n".encode('ascii'))
+    tn.read_until((hostName + "#").encode('ascii')).decode()
+    print('iox is up!\n')
+
+def runAppInter(tn, hostName):
+    tn.write("config term\n".encode('ascii'))
+    tn.read_until((hostName + "(config)#").encode('ascii')).decode()
+    tn.write("inter appGigabit1/0/1\n".encode('ascii'))
+    tn.read_until((hostName + "(config-if)#").encode('ascii')).decode()
+    tn.write("no shutdown\n".encode('ascii'))
+    tn.read_until((hostName + "(config-if)#").encode('ascii')).decode()
+    tn.write("end\n".encode('ascii'))
+    tn.read_until((hostName + "#").encode('ascii')).decode()
+    print('app interface is up!\n')
+
 def output_summary(intf_state):
     result = {}
     # print(json.dumps(intf_state, indent=2))
@@ -647,6 +667,12 @@ class SwitchInfo(object):
 
     def appListInfo(self):
         return readAppList(self.tn, self.hostName)
+
+    def iox(self):
+        return runIox(self.tn, self.hostName)
+
+    def appInter(self):
+        return runAppInter(self.tn, self.hostName)
 
 
 def getDefaultSwitchInfo():
