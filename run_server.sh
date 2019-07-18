@@ -20,4 +20,4 @@
 # AUTHOR(s): Sheetal Sahasrabudhe <sheesaha@cisco.com>
 
 
-FLASK_APP=./server.py flask run
+flask run
