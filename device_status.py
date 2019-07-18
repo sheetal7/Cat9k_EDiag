@@ -36,6 +36,8 @@ import telnetlib
 import time
 import json
 import re
+import pandas as pd
+from datetime import datetime
 
 # Catalyst 9K switch hostname or IP address
 HOSTNAME = "172.24.102.141"
@@ -53,6 +55,20 @@ INTERFACE_NAME = "AppGigabitEthernet1/0/1"
 
 kr_results = []
 
+summary_1 = [{"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Your interface has packet errors, please make sure your settings are correct", "action": "None" },{"name": "MAC pause frames were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Pause frames are seen, check the ethernet statistics and link speed", "action": "None"}, {"name": "All iox services are not running, check iox for details", "status": "0", "value": "R", "message": "Looks like Iox is not running cleanly, would you like to fix it?", "action": "/runIox"}]
+summary_2 = [{"name": "Application hosting interface is down", "status": "0", "value": "R", "message": "App hosting interface is down so app hosting will not work, would you like to fix it?", "action": "/runAppInt"}, {"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"},  {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "USB flash is not available", "status": "0", "value": "R", "message": "None", "action": "None"}]
+summary_3 = [{"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"},  {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "USB flash is available", "status": "1", "value": "G", "message": "None", "action": "None"}]
+
+def getHistory():
+    summary = [summary_1, summary_2, summary_3]
+    mock_d = []
+    for i in range(24):
+        tmp_d = dict()
+        tmp_t = pd.Timestamp('2019-07-17 12:45:32').replace(hour=i)
+        tmp_d['time'] = tmp_t
+        tmp_d['data'] = summary[i%3]
+        mock_d.append(tmp_d)
+    return mock_d
 
 def get_state_data(host, port, user, pwd, ep, intf):
     """Fetch state of the interface from the switch.
@@ -458,6 +474,7 @@ def summary(intf_state, ioxInfo, resInfo, appListInfo):
     res_ds = formatAppRes(resInfo)
     iox_ds = formatIoxInfo(ioxInfo)
     appList_ds = formatAppList(appListInfo)
+    history_ds = getHistory()
 
     return {
         "app-resource": res_ds,
@@ -465,7 +482,8 @@ def summary(intf_state, ioxInfo, resInfo, appListInfo):
         "app-list": appList_ds,
         "summary": optable,
         "state": ds,
-        "stats": stats_ds}
+        "stats": stats_ds,
+        "history": history_ds}
 
 
 def get_intf_state():
@@ -565,6 +583,8 @@ def readAppList(tn, hostName):
             break
         appListInfo[re.sub(' +', ' ', i).split(' ')[0].strip()
                     ] = re.sub(' +', ' ', i).split(' ')[1].strip()
+        appList_titles[re.sub(' +', ' ', i).split(' ')[0].strip()] = re.sub(' +', ' ', i).split(' ')[0].strip()
+        appList_descs[re.sub(' +', ' ', i).split(' ')[0].strip()] = re.sub(' +', ' ', i).split(' ')[0].strip()
     return appListInfo
 
 
