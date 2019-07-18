@@ -20,4 +20,4 @@
 # AUTHOR(s): Sheetal Sahasrabudhe <sheesaha@cisco.com>
 
 
-flask run
+flask run --host=0.0.0.0

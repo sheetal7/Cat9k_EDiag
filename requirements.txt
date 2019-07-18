@@ -1,0 +1,5 @@
+ncclient==0.6.6
+xmltodict
+json2html
+flask
+flask-cors
