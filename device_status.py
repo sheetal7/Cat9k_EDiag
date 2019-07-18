@@ -301,6 +301,7 @@ def runIox(tn, hostName):
     tn.write("end\n".encode('ascii'))
     tn.read_until((hostName + "#").encode('ascii')).decode()
     print('iox is up!\n')
+    return {"status": "SUCCESS", "message": "IOX is UP"}
 
 def runAppInter(tn, hostName):
     tn.write("config term\n".encode('ascii'))
@@ -312,6 +313,7 @@ def runAppInter(tn, hostName):
     tn.write("end\n".encode('ascii'))
     tn.read_until((hostName + "#").encode('ascii')).decode()
     print('app interface is up!\n')
+    return {"status": "SUCCESS", "message": "AppGig Interface is UP"}
 
 def output_summary(intf_state):
     result = {}
@@ -432,8 +434,8 @@ def output_intf_state(intf, intf_state):
     return
 
 
-def summary_html(intf_state):
-    s = summary(intf_state)
+def summary_html(intf_state, switch=None):
+    s = summary(intf_state, switch.ioxInfo(), switch.resInfo(), switch.appListInfo())
 
     out = ""
     out += "<h2> Summary </h2>\n"

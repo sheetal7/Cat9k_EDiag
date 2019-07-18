@@ -5,11 +5,11 @@ from flask_cors import CORS
 app = Flask(__name__)
 cors = CORS(app)
 
+switch = device_status.getDefaultSwitchInfo()
+switch.connect()
 
 @app.route('/device_status.json')
 def index_json():
-	switch = device_status.getDefaultSwitchInfo()
-	switch.connect()
 	intf_state = device_status.get_intf_state()
 	return device_status.summary(intf_state, switch.ioxInfo(), switch.resInfo(), switch.appListInfo())
 
@@ -18,14 +18,12 @@ def index_json():
 @app.route('/device_status.html')
 def index():
     intf_state = device_status.get_intf_state()
-    return device_status.summary_html(intf_state, switch.ioxInfo())
+    return device_status.summary_html(intf_state, switch)
 
 @app.route('/runAppInt')
 def runAppInt():
-	switch = device_status.getDefaultSwitchInfo()
-	switch.appInter()
+	return switch.appInter()
 
 @app.route('/runIox')
 def runIox():
-	switch = device_status.getDefaultSwitchInfo()
-	switch.iox()
+	return switch.iox()
