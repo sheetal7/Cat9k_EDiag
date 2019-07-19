@@ -55,19 +55,59 @@ INTERFACE_NAME = "AppGigabitEthernet1/0/1"
 
 kr_results = []
 
-summary_1 = [{"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Your interface has packet errors, please make sure your settings are correct", "action": "None" },{"name": "MAC pause frames were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Pause frames are seen, check the ethernet statistics and link speed", "action": "None"}, {"name": "All iox services are not running, check iox for details", "status": "0", "value": "R", "message": "Looks like Iox is not running cleanly, would you like to fix it?", "action": "/runIox"}]
-summary_2 = [{"name": "Application hosting interface is down", "status": "0", "value": "R", "message": "App hosting interface is down so app hosting will not work, would you like to fix it?", "action": "/runAppInt"}, {"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"},  {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "USB flash is not available", "status": "0", "value": "R", "message": "None", "action": "None"}]
-summary_3 = [{"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"},  {"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "USB flash is available", "status": "1", "value": "G", "message": "None", "action": "None"}]
-
 def getHistory():
-    summary = [summary_1, summary_2, summary_3]
+    appHostSum = [{"name": "Application hosting interface is up", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "Application hosting interface is down", "status": "0", "value": "R", "message": "App hosting interface is down so app hosting will not work, would you like to fix it?", "action": "/runAppInt"}]
+    packSum = [{"name": "No packet errors seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "Packet errors were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Your interface has packet errors, please make sure your settings are correct", "action": "None"}]
+    macSum = [{"name": "No MAC Pause frames seen on the interface", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "MAC pause frames were seen on the interface, check interface statistics for details", "status": "0", "value": "R", "message": "Pause frames are seen, check the ethernet statistics and link speed", "action": "None"}]
+    ioxSum = [{"name": "All iox services are running", "status": "1", "value": "G", "message": "None", "action": "None"},  {"name": "All iox services are not running, check iox for details", "status": "0", "value": "R", "message": "Looks like Iox is not running cleanly, would you like to fix it?", "action": "/runIox"}]
+    usbSum = [{"name": "USB flash is available", "status": "1", "value": "G", "message": "None", "action": "None"}, {"name": "USB flash is not available", "status": "0", "value": "R", "message": "None", "action": "None"}]
     mock_d = []
+   
+    #all run ->iox down -> iox up -> usb up -> apphost inter down -> apphost inter up -> all run
     for i in range(24):
+        summary = []
         tmp_d = dict()
-        tmp_t = pd.Timestamp('2019-07-17 12:45:32').replace(hour=i)
+        tmp_t = str(pd.Timestamp('2019-07-18 12:45:32').replace(hour=i))
+        if i / 4 < 1:
+            summary.append(appHostSum[0])
+            summary.append(packSum[0])
+            summary.append(macSum[0])
+            summary.append(ioxSum[0])
+            summary.append(usbSum[0])
+        elif i / 4 < 2:
+            summary.append(appHostSum[0])
+            summary.append(packSum[1])
+            summary.append(macSum[1])
+            summary.append(ioxSum[1])
+        elif i / 4 < 3:
+            summary.append(appHostSum[0])
+            summary.append(packSum[1])
+            summary.append(macSum[0])
+            summary.append(ioxSum[0])
+            summary.append(usbSum[1])
+        elif i / 4 < 4:
+            summary.append(appHostSum[0])
+            summary.append(packSum[0])
+            summary.append(macSum[0])
+            summary.append(ioxSum[0])
+            summary.append(usbSum[0])
+        elif i / 4 < 5:
+            summary.append(appHostSum[1])
+            summary.append(packSum[1])
+            summary.append(macSum[0])
+            summary.append(ioxSum[0])
+            summary.append(usbSum[0])
+        elif i / 4 < 6:
+            summary.append(appHostSum[0])
+            summary.append(packSum[0])
+            summary.append(macSum[0])
+            summary.append(ioxSum[0])
+            summary.append(usbSum[0])
         tmp_d['time'] = tmp_t
-        tmp_d['data'] = summary[i%3]
+        tmp_d['data'] = summary
         mock_d.append(tmp_d)
+    with open("output.json", 'w') as f:
+        json.dump(mock_d, f)
     return mock_d
 
 def get_state_data(host, port, user, pwd, ep, intf):
